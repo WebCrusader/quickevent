@@ -1,0 +1,1 @@
+Simple example of Events plugin for Wordpress
