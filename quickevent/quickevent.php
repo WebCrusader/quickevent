@@ -9,6 +9,15 @@ if ( ! defined( 'ABSPATH' ) )
     exit;
 }
 
+// Include DatePicker js/css scripts to administration
+function quick_event_admin_custom_scripts()
+{
+    wp_enqueue_script('jquery-ui-datepicker');
+    wp_register_style('jquery-ui', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css');
+    wp_enqueue_style('jquery-ui');
+}
+add_action('admin_init', 'quick_event_admin_custom_scripts' );
+
 // Register custom post Quick Event
 function quick_event_custom_post_type()
 {
@@ -43,6 +52,13 @@ function quick_event_custom_box_html($post)
 {
     $date = get_post_meta($post->ID, '_quick_event_date_meta_key', true);
     ?>
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    $('#quick_event_date').datepicker({
+        dateFormat : 'yy-mm-dd'
+    });
+});
+</script>
     <label for="quick_event_date_field">Event Date</label>
     <input type="text" name="quick_event_date" id="quick_event_date" value="<?php echo esc_attr( $date ); ?>" />
     <?php
@@ -101,7 +117,7 @@ function quick_event_the_content( $content ) {
     $event_fields = '';
     $date = get_post_meta($post->ID, '_quick_event_date_meta_key', true);
     if ($date) {
-        $event_fields .= 'Date: ' . $date . '<br />';
+        $event_fields .= 'Date: ' . date( 'l jS \o\f F Y', strtotime($date) ) . '<br />';
     }
     $location = get_post_meta($post->ID, '_quick_event_location_meta_key', true);
     if ($location) {
@@ -110,6 +126,18 @@ function quick_event_the_content( $content ) {
     $url = get_post_meta($post->ID, '_quick_event_url_meta_key', true);
     if ($url) {
         $event_fields .= 'Link: <a href="' . esc_attr( $url ) . '">' . $url . '</a><br />';
+    }
+    if ($date) {
+        $event_fields .= '<a href="http://www.google.com/calendar/render?
+action=TEMPLATE
+&text=' . esc_attr( $post->post_title ) . '
+&dates=' . date( 'Ymd', strtotime($date) ) . '/' . date( 'Ymd', strtotime($date) + 24 * 60 * 60  ) . '
+&details=' . esc_attr( $post->post_content ) . '
+&location=' . esc_attr( $location ) . '
+&trp=false
+&sprop=
+&sprop=name:"
+target="_blank" rel="nofollow">Add to my calendar</a><br />';
     }
     $content = $event_fields . $content;
     return $content;
